@@ -1,0 +1,3 @@
+[api_url]
+REDDIT_API = "http://localhost:100"
+STACKOVERFLOW_API = "http://localhost:80"

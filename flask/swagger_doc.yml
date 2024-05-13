@@ -1,0 +1,125 @@
+swagger: "2.0"
+info:
+  description: "This is a data control center for multiple data resources."
+  version: "1.0.0"
+  title: "Data Controller"
+tags:
+- name: "RESTful API"
+paths:
+  /test:
+    get:
+      tags:
+        - "RESTful API"
+      summary: "Ask for related data from multi-resources"
+      description: "Retrieve related data from multi-resources & unify data format"
+      operationId: "getData"
+      produces: "application/json"
+      parameters:
+        - name: "k"
+          in: "query"
+          description: "Question keywords"
+          required: true
+          type: "string"
+          example: "flask;cors;error"
+        - name: "r"
+          in: "query"
+          description: "Target resources"
+          required: true
+          type: "string"
+          example: "s;r"
+        - name: "page"
+          in: "query"
+          description: "Number of pages in Google"
+          required: true
+          type: "integer"
+          format: "int64"
+          example: 0
+        - name: "num"
+          in: "query"
+          description: "Number of the records of data"
+          required: true
+          type: "integer"
+          format: "int64"
+          example: 5
+      responses:
+        400:
+          description: Invalid input
+        401:
+          description: Unauthorized error
+        200:
+          description: Success
+          schema:
+            type: object
+            required:
+              - "result"
+            properties:
+              result:
+                type: "array"
+                items:
+                  type: "string"
+
+definitions:
+  SearchRequest:
+    type: "object"
+    required:
+      - "keywords"
+      - "result_num"
+      - "page_num"
+    properties:
+      keywords:
+        type: "array"
+        items:
+          type: "string"
+        example:
+          - "flask"
+          - "CORS"
+          - "error"
+      result_num:
+        type: "integer"
+        format: "int64"
+        example: 5
+      page_num:
+        type: "integer"
+        format: "int64"
+        example: 0
+  RedditData:
+    type: "object"
+    required:
+      - "link"
+      - "question"
+      - "answers"
+    properties:
+      link:
+        type: "string"
+      question:
+        type: "object"
+        required:
+          - "id"
+          - "title"
+          - "content"
+        properties:
+          id:
+            type: "string"
+          title:
+            type: "string"
+          content:
+            type: "string"
+      answers:
+        type: "array"
+        items:
+          type: "object"
+          required:
+            - "id"
+            - "vote"
+            - "content"
+            - "parent"
+          properties:
+            id:
+              type: "string"
+            vote:
+              type: "integer"
+              format: int64
+            content:
+              type: "string"
+            parent:
+              type: "string"
