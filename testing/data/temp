@@ -1,0 +1,4 @@
+"General Questions": "Is there a source code level debugger with breakpoints, single-stepping, etc.?",
+"Performance": "My program is too slow. How do I speed it up?",
+"Core Language": "Why am I getting an UnboundLocalError when the variable has a value?",
+"Numbers and strings": "How do I specify hexadecimal and octal integers?",
