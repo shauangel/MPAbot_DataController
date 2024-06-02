@@ -1,0 +1,1 @@
+{"General Questions": ["source", "code", "level", "debugger", "breakpoint"], "Core Language": ["value"], "Numbers and strings": ["octal", "integer"], "Performance": ["program", "speed"], "Sequences (Tuples/Lists)": ["tuple", "list"], "Objects": ["object", "instance", "class", "subclass"], "Modules": ["file"]}
