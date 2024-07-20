@@ -1,0 +1,94 @@
+{
+  "link": "https://stackoverflow.com/questions/159720/what-is-the-naming-convention-in-python-for-variables-and-functions",
+  "tags": [
+    "python",
+    "naming-conventions",
+    "camelcasing",
+    "pascalcasing",
+    "snakecasing"
+  ],
+  "question": {
+    "id": 159720,
+    "title": "What is the naming convention in Python for variables and functions?",
+    "content": "Coming from a C# background the naming convention for variables and methods are usually either camelCase or PascalCase: In Python, I have seen the above but I have also seen snake_case being used: Is there a more preferable, definitive coding style for Python?",
+    "view_count": 832557,
+    "last_activity_date": 1714556267,
+    "creation_date": 1222894876
+  },
+  "answers": [
+    {
+      "id": 78413016,
+      "score": -1,
+      "content": "PEP 8 is a guideline, not a law. It is an option on top of Python, not part of the official language. If everybody uses the same style, this would be preferred in a bigger company. All my Python programs at home run perfect with camelCaseNames, I will not change this unless people can prove my code is runner slower or has wrong behavior. However, on my job they want designers to follow the same rules and therefore have chosen for PEP 8 with a set of additional rules. This does not mean they use autopep8, there are many tools to be PEP8 compliant with small variations like black, flake8, autopep8. The tools that improve code to be PEP8 compliant are mainly based on opinion management. So, if people use words like \"Must have\", \"Should have\", \"Shall have\", these should be replaced by \"could have\". I would ask your company their preference. Next to PEP8, I could recommend pylint and mypy, those tools really find issues and showstoppers in your code.",
+      "owner_reputation": 1026
+    },
+    {
+      "id": 50958547,
+      "score": 36,
+      "content": "further to what @JohnTESlade has answered. Google's python style guide has some pretty neat recommendations, Names to Avoid Naming Convention Guidelines derived from Guido's Recommendations\n",
+      "owner_reputation": 18613
+    },
+    {
+      "id": 72603424,
+      "score": 6,
+      "content": "Whether or not being in class or out of class: A variable and function are lowercase as shown below: And if they're more than one word, they're separated with underscore \"_\" as shown below: And, if a variable is a constant, it's uppercase as shown below:",
+      "owner_reputation": 1
+    },
+    {
+      "id": 68958842,
+      "score": 1,
+      "content": "Lenin has told... I'm from Java/C# world too. And SQL as well.\nScrutinized myself in attempts to find first sight understandable examples of complex constructions like list in the dictionary of lists where everything is an object.\nAs for me - camelCase or their variants should become standard for any language. Underscores should be preserved for complex sentences.",
+      "owner_reputation": 375
+    },
+    {
+      "id": 8423697,
+      "score": 1099,
+      "content": "The Google Python Style Guide has the following convention: module_name, package_name, ClassName, method_name, ExceptionName, function_name, GLOBAL_CONSTANT_NAME, global_var_name, instance_var_name, function_parameter_name, local_var_name. A similar naming scheme should be applied to a CLASS_CONSTANT_NAME",
+      "owner_reputation": 12734
+    },
+    {
+      "id": 159745,
+      "score": 1149,
+      "content": "See Python PEP 8: Function and Variable Names: Function names should be lowercase, with words separated by underscores as necessary to improve readability. Variable names follow the same convention as function names. mixedCase is allowed only in contexts where that's already the prevailing style (e.g. threading.py), to retain backwards compatibility.",
+      "owner_reputation": 389570
+    },
+    {
+      "id": 57601736,
+      "score": 0,
+      "content": "I personally use Java's naming conventions when developing in other programming languages as it is consistent and easy to follow. That way I am not continuously struggling over what conventions to use which shouldn't be the hardest part of my project!",
+      "owner_reputation": 384
+    },
+    {
+      "id": 37120709,
+      "score": 16,
+      "content": "There is a paper about this: http://www.cs.kent.edu/~jmaletic/papers/ICPC2010-CamelCaseUnderScoreClouds.pdf TL;DR It says that snake_case is more readable than camelCase. That's why modern languages use (or should use) snake wherever they can.",
+      "owner_reputation": 782
+    },
+    {
+      "id": 2708015,
+      "score": 56,
+      "content": "As the Style Guide for Python Code admits, The naming conventions of Python's\n  library are a bit of a mess, so we'll\n  never get this completely consistent Note that this refers just to Python's standard library. If they can't get that consistent, then there hardly is much hope of having a generally-adhered-to convention for all Python code, is there? From that, and the discussion here, I would deduce that it's not a horrible sin if one keeps using e.g. Java's or C#'s (clear and well-established) naming conventions for variables and functions when crossing over to Python. Keeping in mind, of course, that it is best to abide with whatever the prevailing style for a codebase / project / team happens to be. As the Python Style Guide points out, internal consistency matters most. Feel free to dismiss me as a heretic. :-) Like the OP, I'm not a \"Pythonista\", not yet anyway.",
+      "owner_reputation": 81201
+    },
+    {
+      "id": 160830,
+      "score": 304,
+      "content": "David Goodger (in \"Code Like a Pythonista\" here)  describes the PEP 8 recommendations as follows: joined_lower for functions, methods,\nattributes, variables joined_lower or ALL_CAPS for\nconstants StudlyCaps for classes camelCase only to conform to\npre-existing conventions",
+      "owner_reputation": 34148
+    },
+    {
+      "id": 159756,
+      "score": 4,
+      "content": "The coding style is usually part of an organization's internal policy/convention standards, but I think in general, the all_lower_case_underscore_separator style (also called snake_case) is most common in python. ",
+      "owner_reputation": 51848
+    },
+    {
+      "id": 159798,
+      "score": 29,
+      "content": "Most python people prefer underscores, but even I am using python since more than 5 years right now, I still do not like them. They just look ugly to me, but maybe that's all the Java in my head.  I simply like CamelCase better since it fits better with the way classes are named, It feels more logical to have SomeClass.doSomething() than SomeClass.do_something(). If you look around in the global module index in python, you will find both, which is due to the fact that it's a collection of libraries from various sources that grew overtime and not something that was developed by one company like Sun with strict coding rules. I would say the bottom line is: Use whatever you like better, it's just a question of personal taste.",
+      "owner_reputation": 13199
+    }
+  ],
+  "source": "stackoverflow",
+  "date": "2024-07-14 15:17:32 CST+0800"
+}

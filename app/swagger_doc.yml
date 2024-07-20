@@ -20,7 +20,7 @@ paths:
           description: "Question keywords"
           required: true
           type: "string"
-          example: "flask;cors;error"
+          example: "app;cors;error"
         - name: "r"
           in: "query"
           description: "Target resources"
@@ -71,7 +71,7 @@ definitions:
         items:
           type: "string"
         example:
-          - "flask"
+          - "app"
           - "CORS"
           - "error"
       result_num:

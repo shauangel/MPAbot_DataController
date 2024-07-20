@@ -1,0 +1,191 @@
+[
+  {
+    "source": "reddit",
+    "link": "https://www.reddit.com/r/flask/comments/15lzkxx/i_have_tunneled_my_flask_app_to_ngrok_that_now_is/",
+    "question": {
+      "id": "15lzkxx",
+      "title": "I have tunneled my flask app to ngrok that now is giving CORS error",
+      "content": "Basically I have a flask app up and running on https by adhoc mode:  \n`app.run(host=\"0.0.0.0\", port=5300, ssl_context=\"adhoc\", debug=False)`\n\nWhen you go to the site, you need to accept the \"Proceed to this site\" in Advance mode because it's a self signed certificate. And it's fine I did that and its working.\n\nNow the problem is, when I use `ngrok http https://192.168.1.2:5300` and put that ngrok link in my frontend, it gives me CORS error. Why? Even though, I set up the origin:  \n`CORS(app, supports_credentials=True, origins=\"*\")`\n\nBasically, it works fine when directly accessed from my server but gives CORS with ngrok\n\n# Edit 1:\n\nI just noticed that even if I use Flask as http and use ngrok, it still gives the CORS error so I don't think that it was caused by https in flask\n\n# Edit 2:\n\n**Here is the full error message:**\n\n>Access to fetch at '[https://27ca-103-xxxx.ngrok.io/issues/clients/pending?offset=0&limit=10](https://example.com)' from origin '[http://192.168.1.140:5173](http://192.168.1.140:5173)' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.\n\nAlso, my backend is on ngrok https and frontend on the client on http. Why is there still CORS error even after `origin=\"*\"`?\n\nAnd I am also getting OPTIONS request OK on my server but ofcourse due to CORS, it doesn't move ahead\n\nAnd if I test it without\\* ngrok with just my backend's private address + my frontend address, it works great (ofcourse, after solving the `NET::ERR_CERT_AUTHORITY_INVALID` as my SSL is self-signed)",
+      "subreddit": {
+        "created_utc": 1282262360.0,
+        "subscribers": 84777
+      }
+    },
+    "answers": [
+      {
+        "id": "jvdtv1b",
+        "total_vote": 9,
+        "dialogue": "When you tunnel your Flask app through ngrok, the origin of your request is effectively changed from your local Flask server to the ngrok URL. So, even if you've set up CORS to allow all origins with `origins=\"*\"`, there can still be issues if there's any inconsistency between how the front-end and back-end handle the requests.\n\nHere are some troubleshooting steps:\n\n1. **Check the Exact Error Message:** Make sure the error is directly related to CORS and not some other error. The browser's developer console should provide details about the CORS error, such as which header is missing or incorrect.\n\n2. **Explicitly Specify the ngrok URL in `origins`**: Instead of using the wildcard `*`, explicitly list the ngrok URL to see if it solves the issue.\n   \n   ```python\n   allowed_origins = [\"http://your-ngrok-subdomain.ngrok.io\"]\n   CORS(app, supports_credentials=True, origins=allowed_origins)\n   ```\n\n3. **Handle Preflight Requests**: Ensure you're correctly handling CORS preflight (`OPTIONS`) requests. Flask-CORS should handle this for you, but if there's some other middleware or route that's intercepting those requests, they might not be handled properly.\n\n4. **Use `https` for Both Flask and ngrok**: If your Flask app is running in `https`, make sure you're also using the `https` protocol for ngrok. This ensures that the protocols match.\n\n5. **Inspect Headers**: Using tools like Postman or the browser's developer console, inspect the headers of the request and the response. Ensure the `Access-Control-Allow-Origin` header is present and correctly set in the response.\n\n6. **Update Flask-CORS**: Ensure you're using the latest version of Flask-CORS. Sometimes bugs are fixed in newer releases.\n\n7. **Check if Other Middleware Interferes**: If you have other middlewares in your Flask app, ensure they're not interfering with Flask-CORS or modifying the headers in some way.\n\n8. **Logs and Debug**: Use Flask's debug mode or check ngrok's web interface (usually available at `http://localhost:4040`) for request logs. This can give insights into what's going wrong.\n\nIf after trying these steps you're still encountering issues, consider sharing the exact CORS error message and any related request/response headers for further assistance.\n\nHey, I  have edited the question (Edit 2) please look. I have addressed all of which I got. Is there anything else I could do? Thanks a lot!  \nAlso, setting the origins to ngrok wouldn't make sense because my backend is on ngrok not frontent :) I just want my backend on ngrok to accept frontend\n\nTeach me!!!!\n\nThe error message states that the server isn't sending the `Access-Control-Allow-Origin` header in its response. Let's break it down and find a solution:\n\n### 1. Protocol Mismatch:\nEven though you mentioned in Edit 1 that using HTTP on both Flask and ngrok still results in a CORS error, it's important to be aware that browsers consider HTTP and HTTPS as different origins. That said, the error message points out that the backend (ngrok URL) is HTTPS while the frontend is HTTP. This alone can lead to CORS issues.\n\n### 2. Flask-CORS and Wildcard with Credentials:\n\nWhen you set the origins to `\"*\"` and at the same time have `supports_credentials=True`, it can cause problems. Browsers do not allow wildcards with credentials. Instead of the wildcard, you need to specify the actual origin:\n\n```python\nCORS(app, supports_credentials=True, origins=[\"http://192.168.1.140:5173\"])\n```\n\n### 3. Multiple Origins:\n\nIf you have multiple origins, dynamically set the origin based on the request:\n\n```python\ndef cors_origin(response):\n    request_origin = request.headers.get('Origin')\n    valid_origins = [\"http://192.168.1.140:5173\", \"http://your-ngrok-subdomain.ngrok.io\"]\n    if request_origin in valid_origins:\n        response.headers.add(\"Access-Control-Allow-Origin\", request_origin)\n    return response\n\napp.after_request(cors_origin)\n```\n\n### 4. Handling Preflight Requests:\n\nThe error message indicates a problem with the preflight `OPTIONS` request. Make sure that the server responds correctly to the `OPTIONS` request. You might need to handle it manually:\n\n```python\n@app.route('/your-endpoint', methods=['OPTIONS'])\ndef options():\n    response = flask.make_response()\n    response.headers.add(\"Access-Control-Allow-Origin\", \"http://192.168.1.140:5173\")\n    response.headers.add(\"Access-Control-Allow-Methods\", \"GET, POST, OPTIONS\")\n    response.headers.add(\"Access-Control-Allow-Headers\", \"Content-Type, Authorization\")\n    response.headers.add(\"Access-Control-Allow-Credentials\", \"true\")\n    return response\n```\n\n### 5. Ngrok Headers:\n\nNgrok may be modifying headers or not passing them along as expected. You can test this by manually proxying requests (using tools like Postman) and examining headers at each stage to see if they're getting stripped or altered.\n\n### 6. Other Flask Middlewares:\n\nIf there are other middlewares in your Flask app, ensure they aren't running after Flask-CORS and modifying the headers, which can nullify the CORS headers.\n\n### 7. Debugging:\n\nUse logging in Flask to log all incoming headers and the response headers. This will provide insights on what headers are received and what's sent back.\n\n### Conclusion:\n\nThe key is to ensure your server is responding with the proper CORS headers for both preflight and actual requests. Pay special attention to the wildcard and credentials issue. If your app is still showing CORS errors after all these changes, consider setting up a simpler version of your app without any additional middlewares to narrow down the issue.",
+        "author_comment_karma": 15654
+      }
+    ]
+  },
+  {
+    "source": "reddit",
+    "link": "https://www.reddit.com/r/reactjs/comments/l192dn/how_to_deal_with_cors_error_in_react_and_flask_app/",
+    "question": {
+      "id": "l192dn",
+      "title": "How to deal with CORS error in react and flask app?",
+      "content": "I am trying to redirect to react app to \"example.com\" when an endpoint on the flask app is hit. But I am getting 'No \"Access-Control-Allow-Origin\" header is present on the requested resource.'. I have searched on stackoverflow and google but I can not find something useful.",
+      "subreddit": {
+        "created_utc": 1388469131.0,
+        "subscribers": 409480
+      }
+    },
+    "answers": [
+      {
+        "id": "gjxxsot",
+        "total_vote": 4,
+        "dialogue": "On your respond header you need to set Access-Contol-Allow-Origin: \u201d*\u201d or to your domain. Check https://stackoverflow.com/questions/25594893/how-to-enable-cors-in-flask\n\nhi u/donjuan1337,   \n\n\nThank you! this worked for me in June 2023  \n\n\nYou need to add cors \"http:/localhost:3000\",",
+        "author_comment_karma": 979
+      },
+      {
+        "id": "icees8p",
+        "total_vote": 4,
+        "dialogue": "Did you ever find a solution?\n\ndid you ?\n\nDid you?\n\nSwitched to fast api",
+        "author_comment_karma": 26789
+      }
+    ]
+  },
+  {
+    "source": "reddit",
+    "link": "https://www.reddit.com/r/learnpython/comments/jvsfsq/getting_cors_errors_when_running_flask_app_from/",
+    "question": {
+      "id": "jvsfsq",
+      "title": "Getting CORS errors when running flask app from react",
+      "content": "hey, I'm fairly new to flask and wrote a script that onces hits a path which redirects to a another path in the same backend server. Its a fairly basic code, but i'm getting CORS errors when running it on react server `(localhost:3000)` but it works perfectly when i'm running on flask directly `(localhost:5000)`. I installed flask-cors and tried initializing with CORS(app) but i'm getting the same error in my browser console.\n\n    Access to fetch at 'http://localhost:5000/test2' (redirected from \n    'http://localhost:3000/test') from origin 'http://localhost:3000' has been blocked \n    by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested \n    resource. If an opaque response serves your needs, set the request's mode to 'no-\n    cors' to fetch the resource with CORS disabled.\n\nhere is my code -\n\n[https://pastebin.com/YTP4YRkR](https://pastebin.com/YTP4YRkR)\n\n&#x200B;\n\nI'm stuck with this for 5hrs any help will be appreciated. Thanks",
+      "subreddit": {
+        "created_utc": 1254499181.0,
+        "subscribers": 826869
+      }
+    },
+    "answers": [
+      {
+        "id": "gcm4yof",
+        "total_vote": 8,
+        "dialogue": "This is because you are sending your request from the front end and your browser is blocking it. You need to enable it on your back end or send the requests from the back end and then pull them into the front end.\n\nTo add to this, a must read article on CORS: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS\n\nRead the above in its entirety a few times, look up other resources if you don't know anything mentioned there. CORS is an important aspect of web dev you gotta learn by doing.",
+        "author_comment_karma": 12828
+      },
+      {
+        "id": "gcmkfh2",
+        "total_vote": 6,
+        "dialogue": "I ran into this issue while running an app on Google app engine where the front end was sending from one address and the back end was receiving on a different address. The point of this system is to prevent back end from receiving a request from all kinds of different front ends some of the malicious. I solved my issue by making the destination and source URL the same that may be something that you were running into as well You've got local hosts somewhere but somewhere else you're receiving on a different URL. There is a workaround by seeing an x forwarder header but it's a bad practice unless absolutely necessary.\n\nthanks, i found out the issue. you were correct my backend and front end were running on different ports.\n\nhttps://giphy.com/gifs/yes-napoleon-dynamite-fist-89x4osEodHEoo",
+        "author_comment_karma": 1306
+      },
+      {
+        "id": "gcm4unz",
+        "total_vote": 0,
+        "dialogue": "I don't know all the details, but CORS has rules around response codes in the 300s. Read up on those to make sure you're doing it correctly.\n\nA simple way I think you could test is to just return a string instead of a redirect, and see if your browser receives the payload without error. If so, you'll know that it's something specific to the redirect.. If you have a redirect to Youtube, I'd handle that on the front-end and just use the backend for serving your content.",
+        "author_comment_karma": 27120
+      }
+    ]
+  },
+  {
+    "source": "reddit",
+    "link": "https://www.reddit.com/r/flask/comments/mfhf8e/getting_cors_issue_in_flask_basically_all_my_gets/",
+    "question": {
+      "id": "mfhf8e",
+      "title": "Getting CORS issue in flask. Basically all my GETs work fine but just the POST and PUTs preflight request fails for some reason. And because of that browser makes a OPTIONS request instead of a POST. It's not a simple request as I am using cookies for all. Any advice?",
+      "content": "",
+      "subreddit": {
+        "created_utc": 1282262360.0,
+        "subscribers": 84777
+      }
+    },
+    "answers": [
+      {
+        "id": "gsnjw6z",
+        "total_vote": 9,
+        "dialogue": "Make sure there is a get option for the endpoints you are posting and putting to.  Flask uses the get request for option requests.  It is normal for the browser to make the options request.  Make sure you are setting the correct CORs headers on your get requests. There are many ways you can do this.  Manually in the get request, through middleware using something like flask-CORs or using a reverse proxy, http load balancer, or through some CDNs like cloud flare.  My preference is to handle CORs outside of my application, usually in a http aware reverse proxy like nginx.  And don\u2019t Allow * (all)\n\nThanks for the quick reply. I already tried with nginx reverse proxy and that seem to not work even after setting proxy_pass directives and necessary headers as per their documentation.  So you say I need to have a get request for all views that has a post/put methods? And the get needs to just return 204 ?\n\nThe get needs to return the CORs headers for that endpoint.  Flask by default will not return a body when handling option requests with the get.  Status code can be what ever it would be for a normal get (200).  Flask should make it a 204 automatically when using it for option requests\n\nOk makes sense..will give this a try",
+        "author_comment_karma": 361
+      },
+      {
+        "id": "gsnqmjr",
+        "total_vote": 6,
+        "dialogue": "**What is the exact cors error reported by the browser and the options response?**\n\nDo you have a `before_request` function that's doing authentication? If so, it needs to be exempted from options requests.\n\nPreflight request did not respond with http ok status\n\nApparently this was the issue. I had a before request handler for authorization which was returning 401 for preflight OPTIONS request. Once I fixed that the CORS issue got resolved",
+        "author_comment_karma": 3225
+      },
+      {
+        "id": "gsnjcjy",
+        "total_vote": 3,
+        "dialogue": "Ohh btw I am already using the infamous CORS(app) with bunch of configurations but still doesn't seem to work.\n\nCan you give an example of your configuration?\n\nThis is the configuration:  \napp.config\\[\"CORS\\_SUPPORTS\\_CREDENTIALS\"\\] = True\n\napp.config\\[\"CORS\\_ALLOW\\_HEADERS\"\\] = \\[\n\n\"Content-Type\",\n\n\"Authorization\",\n\n\"DNT\",\n\n\"X-CustomHeader\",\n\n\"Keep-Alive\",\n\n\"User-Agent\",\n\n\"X-Requested-With\",\n\n\"If-Modified-Since\",\n\n\"Cache-Control\",\n\n\\]\n\napp.config\\[\"CORS\\_EXPOSE\\_HEADERS\"\\] = \\[\n\n\"Content-Type\",\n\n\"Authorization\",\n\n\"DNT\",\n\n\"X-CustomHeader\",\n\n\"Keep-Alive\",\n\n\"User-Agent\",\n\n\"X-Requested-With\",\n\n\"If-Modified-Since\",\n\n\"Cache-Control\",\n\n\\]\n\napp.config\\[\"CORS\\_ORIGINS\"\\] = \"<localhost-ip-port>\"\n\napp.config\\[\"CORS\\_HEADERS\"\\] = \\[\n\n\"DNT\",\n\n\"X-CustomHeader\",\n\n\"Keep-Alive\",\n\n\"User-Agent\",\n\n\"X-Requested-With\",\n\n\"If-Modified-Since\",\n\n\"Cache-Control\",\n\n\"Content-Type\",\n\n\\]\n\n\\# CORS([app.app](https://app.app))\n\nCORS(\n\napp,\n\nresources={\n\nr\"/api/<endpoint-1>\": {\n\n\"origins\": \"<localhost -ip-port>\",\n\n\"allow\\_headers\": \\[\n\n\"Content-Type\",\n\n\"Authorization\",\n\n\"DNT\",\n\n\"X-CustomHeader\",\n\n\"Keep-Alive\",\n\n\"User-Agent\",\n\n\"X-Requested-With\",\n\n\"If-Modified-Since\",\n\n\"Cache-Control\",\n\n\\],\n\n\"expose\\_headers\": \\[\n\n\"Content-Type\",\n\n\"Authorization\",\n\n\"DNT\",\n\n\"X-CustomHeader\",\n\n\"Keep-Alive\",\n\n\"User-Agent\",\n\n\"X-Requested-With\",\n\n\"If-Modified-Since\",\n\n\"Cache-Control\",\n\n\\],\n\n\"supports\\_credentials\": True,\n\n\"headers\": \\[\n\n\"Content-Type\",\n\n\"Authorization\",\n\n\"DNT\",\n\n\"X-CustomHeader\",\n\n\"Keep-Alive\",\n\n\"User-Agent\",\n\n\"X-Requested-With\",\n\n\"If-Modified-Since\",\n\n\"Cache-Control\",\n\n\\],\n\n},\n\nr\"/api/<endpoint-2>\": {\n\n\"origins\": \"<localhost-ip/port>\",\n\n\"allow\\_headers\": \\[\"Content-Type\", \"Authorization\"\\],\n\n\"expose\\_headers\": \\[\"Content-Type\", \"Authorization\"\\],\n\n\"supports\\_credentials\": True,\n\n},\n\nr\"/api/\\*\": {\n\n\"origins\": \"<localhost-ip/port>\",\n\n\"allow\\_headers\": \\[\"Content-Type\", \"Authorization\"\\],\n\n\"expose\\_headers\": \\[\"Content-Type\", \"Authorization\"\\],\n\n\"supports\\_credentials\": True,\n\n},\n\n},\n\n)",
+        "author_comment_karma": 3471
+      },
+      {
+        "id": "gsnkqhy",
+        "total_vote": 1,
+        "dialogue": "Okay, I got some error like this. It was coz of wrong endpoints I gave in my frontend. I deployed to server but frontend was still pointing at localhost. \n\nIt makes an option request then fails. Try checking this out.",
+        "author_comment_karma": 59956
+      }
+    ]
+  },
+  {
+    "source": "reddit",
+    "link": "https://www.reddit.com/r/flask/comments/knhg40/cors_problem_react_flask/",
+    "question": {
+      "id": "knhg40",
+      "title": "CORS problem (React + Flask)",
+      "content": "I have seen numerous posts here about this issue, but I have tried most of the solutions presented in them. I figure instead of retyping the whole problem, I'll link my stack overflow post.\n\n[https://stackoverflow.com/questions/65503432/running-into-issues-with-cors-with-flask](https://stackoverflow.com/questions/65503432/running-into-issues-with-cors-with-flask)\n\nLong story short, my react client is running on localhost:3000 and my flask server is running on localhost:5000. I have the flask-cors library in the same directory as my server and added in \"proxy\": \"[http://localhost:5000](http://localhost:5000)\" in my package.json file in the client directory. When I run my code, from the inspector, the request is still being made from localhost:3000. I have read about using Nginx, but supposedly that's used for production? I could be wrong here.. Any help is greatly appreciated! Thanks.",
+      "subreddit": {
+        "created_utc": 1282262360.0,
+        "subscribers": 84777
+      }
+    },
+    "answers": [
+      {
+        "id": "ghktxc3",
+        "total_vote": 3,
+        "dialogue": "You can add response headers with `@app.after_request`\n\nStart with\n\n`@app.after_request`\n\n`def per_request_callbacks(response):`\n\n`response.headers['Access-Control-Allow-Origin'] = '*'`\n\n`return response`\n\nFlask-cors is cleaner, but this may be easier to debug.\n\nStill doesn\u2019t work because of the OPTIONS request.\n\nOh, you can hook before_request to handle that..",
+        "author_comment_karma": 4960
+      },
+      {
+        "id": "ghkjkrg",
+        "total_vote": 11,
+        "dialogue": "WhT does your app factory look like? Cors in flask is usually a one line operation\n\n>Cors in flask is usually a one line opera\n\nWhat did you mean by app factory?\n\nWhat does your create_app function look like? \n\nhttps://flask.palletsprojects.com/en/1.1.x/patterns/appfactories/\n\n\\`\\`\\`\n\n`# Python standard library`\n\n`import os`\n\n`# Third-party libraries`\n\n`from flask import Flask`\n\n`from dotenv import load_dotenv`\n\n`from flask_login import LoginManager`\n\n`from flask_cors import CORS`\n\n`# Internal imports`\n\n`from login import login_page`\n\n`from user import User`\n\n`load_dotenv()`\n\n`# Flask app setup`\n\n`app = Flask(__name__)`\n\n`app.secret_key = os.environ.get(\"SECRET_KEY\") or os.urandom(24)`\n\n`app.config['CORS_HEADERS'] = 'Content-Type'`\n\n`# User session management setup`\n\n`login_manager = LoginManager()`\n\n`login_manager.init_app(app)`\n\n`u/login_manager.user_loader`\n\n`def load_user(user_id):`\n\n`return User.get(user_id)`\n\n`app.register_blueprint(login_page)`\n\n`CORS(app)`\n\n`app.config['CORS_HEADERS'] = 'Content-Type'`\n\n`if __name__ == \"__main__\":`\n\n`app.run(host=\"localhost\", debug=True)\\`\n\n\\`\\`\\`\n\nPlease for the love of god, learn how to format your code on Reddit. Use three backticks surrounding the code.\n\nWoof. I\u2019ll look tomorrow when I\u2019m at a computer.",
+        "author_comment_karma": 7169
+      },
+      {
+        "id": "ghkjnbg",
+        "total_vote": 2,
+        "dialogue": "I can confirm that none of the answers on stack overflow will work. Apparently flask responds to OPTIONS requires automatically and Flask-CORS doesn\u2019t do anything about that.\n\nHave you found a work around to this?",
+        "author_comment_karma": 8028
+      },
+      {
+        "id": "ghkl6oo",
+        "total_vote": 2,
+        "dialogue": "I haven't seen CORS applied directly to a blueprint before, does it still have the same issue if you wrap the root app in the CORS function rather than on the blueprint?\n\nFrom the documentation, you need to do both.  Wrap the main application as well as all blueprints",
+        "author_comment_karma": 23527
+      },
+      {
+        "id": "ghkmwbu",
+        "total_vote": 2,
+        "dialogue": "Are you using create-react-app for the client? I think the \"proxy\" functionality is built into their scripts and it's how I've personally solved it before.\n\nYa, I used the create-react-app for the client. All the posts I found on Google, added the line to the package.json and they also used the same command to create the client. :(",
+        "author_comment_karma": 19526
+      },
+      {
+        "id": "ghkriax",
+        "total_vote": 13,
+        "dialogue": "Use Nginx (and optionally Docker) and save yourself the hassle, IMO. I've had a similar problem recently, and solved it that way. My Vue app was sending a pre-flight OPTIONS request, for which Flask didn't respond with an Access-Control-Allow-Origin header, even tho I was using Flask-CORS.\n\nDid you just scrap the flask-cors library all together?\n\nYup, you don't need it once everything is coming from the same origin.\n\nOkay, thanks. I'll try to learn how Nginx works! Hopefully, I can leave this thread after it. :)\n\nIt's not hard, and you'll probably need to learn it anyway once you want to deploy your app, so you're not wasting time. Have fun! :)\n\nHey, was wondering if you could point me in the right direction with using Nginx and docker. I've followed many guides and I'm still running into CORS. This is an update on my original stack overflow post to show what I have so far:\n\n&#x200B;\n\n[https://stackoverflow.com/questions/65503432/running-into-issues-with-cors-with-flask](https://stackoverflow.com/questions/65503432/running-into-issues-with-cors-with-flask)\n\nTry running react on port 3000 and then in your docker-compose section for react set:\n\n    ports:\n      - 3000:3000\n\nand then in nginx config set:\n\n    proxy_pass          http://react-client:3000;\n\nI'm not sure how you configured the containers, but `3000:80` means that port `80` inside the container maps to port `3000` on the host machine. If you're not using these ports for anything but nginx, it's better to use the `expose` instruction instead of `ports`.\n\nAlso, you're now supposed to access your frontend from `localhost:80`, not `localhost:3000`.\n\nSo I tried those changes and now I get a bad gateway error :( Also, how does the proxy\\_pass portion work? so for example, proxy\\_pass [http://react-client:3000](http://react-client:3000), if we are at the root url, would the entire url change? When I mean is would the process do something similar to making a request from say localhost:5000 instead of localhost:3000?\n\nDamn, weird stuff. Check what the logs say?\n\nproxy_pass just links an nginx location with a provided app. For example:\n\n    location /login {\n        proxy_pass          http://flask-backend:5000;\n    }\n\nHere, `/login` URL would redirect to port `5000` on hostname `flask-backend`. AFAIK, docker-compose manages hostnames and by default they're the same as the container names, so hostnames should work automatically. You need the ports to match with what your docker containers expose. \n\nYou could also theoretically point this to some remote server and to the user it would still all appear as if it's coming from the same domain, and that's why it solves the CORS stuff.\n\nOn your host machine, you're accessing nginx on port `80`, and that's the only place from which nginx will handle requests and uses the appropriate proxies etc. If you're still accessing frontend via port `3000`, then it's being handled directly by React built-in development server and you will still get CORS errors because your frontend is on port 3000, and it's calling backend on port 5000. For the CORS errors to disappear everything must originate on the same hostname and port.\n\nYa, I had that previously before as well. What seemed to fix the CORS issue was creating an upstream. Here is an updated version of my config files here:\n\n[https://stackoverflow.com/questions/65503432/running-into-issues-with-cors-with-flask](https://stackoverflow.com/questions/65503432/running-into-issues-with-cors-with-flask)\n\nStill not working though, unfortunately :(\n\nHmmmm, no idea tbh. Are you by any chance still making HTTP requests in your react app to port `3000`? You should change that to 80 or just leave it blank.\n\nYa, I open it up on both localhost:80 or localhost/ and they both give the same result, as expected. Do you have any projects on GitHub that I could take a look at that you used this concept on?\n\nOh, I meant if your React app is making requests with fetch/axios, you need to change the base URL argument and leave out the port there.\n\nI don't have any repos unfortunately, I just followed [this tutorial](https://testdriven.io/blog/dockerizing-flask-with-postgres-gunicorn-and-nginx/).",
+        "author_comment_karma": 1964
+      },
+      {
+        "id": "ghks1v0",
+        "total_vote": 1,
+        "dialogue": "Get rid of the proxy and wrap your app in the factory with CORS from flask-cors. That'll open your CORS policy up to allow from any origin and it should work!",
+        "author_comment_karma": 1517
+      },
+      {
+        "id": "ghlctgu",
+        "total_vote": 1,
+        "dialogue": "Not sure what you\u2019re trying to do, but I had a similar issue. Wanted flask + react with CORS and I wanted it for local development (for myself plus the team). Dockerized it, used nginx as a reverse proxy, still had the issue (we were using Okta for login so removing CORS wasn\u2019t an option). \n\nThe issue was that https was a hard requirement and things simply wouldn\u2019t work without it. You can fake it with self-signed certificates, but Okta wasn\u2019t having it and we needed real certs. If you have a registered domain, you can get them for free with certbot. Nobody is going to give you certs for localhost, and even if you spin up an ec2 instance on aws (or the equivalent from whoever), you still can\u2019t get them for an aws/other cloud provider url, since those IP\u2019s change hands so frequently. \n\nWhat worked for me was to use a subdomain if a domain we already owned from Namecheap (or whoever), spin up an ec2 instance (the smallest i.e. t2.micro is fine), set an elastic IP, register it with Namecheap, fire up nginx (I also used a simple hello world flask app to be sure it was working), and use certbot to get proper certificates. Make sure you can reach your site via https (once you\u2019ve modified the nginx.conf file appropriately). \n\nOnce you have the certs, get them on your local and shut down the instance. The last thing you need to do is add a line to your /etc/hosts file, setting 127.0.0.1 to point to your subdomain. This tricks your machine into thinking it\u2019s hitting the internet and should handle the https issues. The same ngninx.conf file should work that you used on the instance. \n\nCheck that you can get to your hello world flask app via https by hitting that subdomain. If you can, you should be good to go with your actual flask + react app (which now includes nginx and is ideally dockerized)",
+        "author_comment_karma": 2246
+      },
+      {
+        "id": "ghlkani",
+        "total_vote": 1,
+        "dialogue": "is there any reason you're using CORS ? CORS is usually used when sharing resources between different domains but as long as both of your apps are running from the same local server, there is no need to use CORS",
+        "author_comment_karma": -4
+      }
+    ]
+  }
+]

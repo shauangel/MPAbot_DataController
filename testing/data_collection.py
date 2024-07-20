@@ -1,8 +1,8 @@
 import requests
 import json
 
-
-myUrl = "http://192.168.0.100:8000/test?k=(key)&r=r;s&page=0&num=10"
+# collect data from controller
+myUrl = "http://192.168.0.100:8000/test?k=(key)&r=s&page=0&num=10"
 # psabottools = "http://localhost:140/api/data_clean"
 
 if __name__ == "__main__":

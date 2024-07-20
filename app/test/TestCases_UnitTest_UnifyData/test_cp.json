@@ -1,0 +1,100 @@
+[
+  {
+    "source": "codeproject",
+    "question": {
+      "id": "5311037",
+      "title": "How to retain selected columns from dropdown for next login and show only those cols as default when user logins .UI in reactjs and flask backend",
+      "content": "\r\n\t\t\t    On Login of my Application by default the frontend shows 20 columns and also there is a dropdown for user selection of these columns to show only columns user is interested working on instead of all 20. Suppose the user selects 5 columns and logouts out and again login next time I want my application to remember those 5 columns and by default show only those 5 columns when I login to application. We are getting the column data from payload from frontend so I am able to show the columns user selects but to retain those columns until user logins next time is something I am trying to achieve. Any guidance on this would be of great help.\n\nWhat I have tried:\n\r\nI am able to show the columns user selects from dropdown in UI but to retain those columns until user logins next time is something I am trying to achieve. Any guidance on this would be of great help.\r\n\t\t    "
+    },
+    "answers": [
+
+    ],
+    "link": "https://www.codeproject.com/Questions/5311037/How-to-retain-selected-columns-from-dropdown-for-n",
+    "tags": [
+      "ReactJS",
+      "flask"
+    ]
+  },
+  {
+    "source": "codeproject",
+    "question": {
+      "id": "5345658",
+      "title": "Unable to pass values form JS func(ajax) to Python flask server",
+      "content": "\r\n\t\t\t    My Python code-:\nPython\n\r\nfrom flask import Flask\r\nfrom flask_cors import CORS\r\nimport cgi\r\n\r\napp = Flask(__name__)\r\nCORS(app)\r\n\r\nform = cgi.FieldStorage()\r\n\r\n@app.route(\"/\", methods=['POST'])\r\ndef apicall():\r\n  var1 = form.getvalue('var1')\r\n  if len(var1)>1:\r\n    return 'received value from JS function'   \r\n\r\nif __name__ == \"__main__\":\r\n  app.run()\n\r\nMy JS function -:\nJavaScript\n\r\nfunction callPythonScript() {\r\n    alert(\"called_python_script\");\r\n    $.ajax({\r\n        url: \"http://127.0.0.1:5000\",\r\n        type: \"POST\",\r\n        data:{\r\n            var1: window.location.href,\r\n        },\r\n        success: function(response) {\r\n            console.log(response);\r\n        },\r\n        error: function(xhr) {\r\n            console.log(xhr);\r\n        }\r\n\n\r\npython throws this error - TypeError: object of type 'NoneType' has no len()\r\n127.0.0.1 - - [31/Oct/2022 00:28:01] \"POST / HTTP/1.1\" 500 -\n\r\nis there any configuration i need to do to my flask server in order to accept values from js\n\nWhat I have tried:\n\r\nimport cgi\r\nform = cgi.FieldStorage()\r\nvar1 = form.getvalue('var1')\r\n\t\t    "
+    },
+    "answers": [
+
+    ],
+    "link": "https://www.codeproject.com/Questions/5345658/Unable-to-pass-values-form-JS-func-ajax-to-Python",
+    "tags": [
+      "Javascript",
+      "HTML",
+      "Ajax",
+      "Python"
+    ]
+  },
+  {
+    "source": "codeproject",
+    "question": {
+      "id": "5332367",
+      "title": "Why is my Python server always returning 404 when the page is found?",
+      "content": "\r\n\t\t\t    Hello, coding guys,\n\r\nAs you saw in the title, my Python API returns a 404 page when a page is found, like /python/ should return \"print(\"Hello, world!\")\", but returns 404 instead. This is my code:\n\nmain.py\n\r\nfrom flask import Flask, send_from_directory, abort\r\nimport json\r\nfrom flask_cors import CORS\r\napp = Flask(\"app\")\r\nCORS(app)\r\n\r\n@app.route(\"/\")\r\ndef main():\r\n\treturn abort(400)\r\n\r\n@app.route(\"/<string:lang>/\")\r\ndef hwres(lang):\r\n\tif lang.split(\"/\")[0] == lang:\r\n\t\tlang = lang.split(\"\\\\\")[0]\r\n\telse:\r\n\t\tlang = lang.split(\"/\")[0]\r\n\tlang = lang.lower()\r\n\twith open(\"examples.json\", \"r\") as exampleIO:\r\n\t\tglobal exampleJson, exampleJsonStr\r\n\t\texampleJsonStr = exampleIO.read()\r\n\t\texampleJson = json.loads(exampleJsonStr)\r\n\ttry:\r\n\t\tstr(exampleJson[\"hw\"][lang])\r\n\texcept:\r\n\t\treturn abort(400)\r\n\twith open(\"hw-code.txt\", \"r+\") as exampleIO:\r\n\t\texampleIO.truncate()\r\n\twith open(\"hw-code.txt\", \"a\") as exampleIO:\r\n\t\texampleIO.write(exampleJson[\"hw\"][lang])\r\n\treturn send_from_directory(\".\", \"hw-code.json\")\r\n\r\napp.run(host=\"0.0.0.0\", port=8080)\n\r\nAbou the main site returning Bad Request, that's supposed to happen.\n\nWhat I have tried:\n\r\n\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\r\n\t\t    "
+    },
+    "answers": [
+
+    ],
+    "link": "https://www.codeproject.com/Questions/5332367/Why-is-my-Python-server-always-returning-404-when",
+    "tags": [
+      "Python",
+      "flask"
+    ]
+  },
+  {
+    "source": "codeproject",
+    "question": {
+      "id": "5251627",
+      "title": "After published rest api returning internal server error",
+      "content": "\r\n\t\t\t    Hello All,\n\r\nI tried to invoking Dynamics Nav Rest/OData web service in Asp.net and it's working perfectly when I was running in my local application.\n\r\nAfter I published to IIS Server it's not getting the result it's throwing error Internal Server Error.\n\nWhat I have tried:\n\r\nI tried below code\n\nC#\n\r\npublic string GetData()\r\n        {\r\n\r\n            NetworkCredential networkCredential = new NetworkCredential(\"bojjaiah.thoti\", \"pass@word1\", \"testserver\");\r\n\r\n            using (var client = new HttpClient(new HttpClientHandler() { UseDefaultCredentials = true, Credentials = networkCredential, PreAuthenticate = true }))\r\n            {\r\n                ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });\r\n                Uri uri = new Uri(\"http://10.10.10.52:7148/DynamicsNav1/OData/\");\r\n                client.BaseAddress = uri;\r\n                client.DefaultRequestHeaders.Accept.Clear();\r\n                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(\"application/json\"));\r\n                \r\n\r\n                string clarity_URL = \"http://10.10.10.52:7148/DynamicsNav1/OData/ShopFloorTaskList\";\r\n                var response = client.GetAsync(clarity_URL).Result;\r\n\r\n                string responseString = response.Content.ReadAsStringAsync().Result;\r\n                Response.Write(responseString);\r\n                return responseString;\r\n            }\r\n        } \n\r\nI don't know what is the difference between local application and Hosted Application. \n\r\nPlease suggest us to work on IIS server.\r\n\t\t    "
+    },
+    "answers": [
+      {
+        "id": "2_5251655_1",
+        "type": "acceptedAnswer",
+        "content": "\r\n    Solved my self, by removing below property from HttpClientHandler class C#\n\r\nUseDefaultCredentials = true\n",
+        "score": 0,
+        "vote_count": 0,
+        "user_reputation": 6475
+      }
+    ],
+    "link": "https://www.codeproject.com/Questions/5251627/After-published-rest-api-returning-internal-server",
+    "tags": [
+      "C#",
+      "ASP.NET",
+      "IIS"
+    ]
+  },
+  {
+    "source": "codeproject",
+    "question": {
+      "id": "5296802",
+      "title": "[Solved] make flask-socket.io server accessible",
+      "content": "\r\n\t\t\t    Hi forum,\n\r\nthere is a python program using flask and socket.io to create a web server which runs on my development machine. On the same machine, I can access the server and get the website it serves by typing localhost:5000 in the address field of my browser.\r\nThis site should also be accessible from other devices in our LAN (including WiFi). So It should serve to its IP address. I type 192.168.1.42 in the address field of the same browser on the same machine that worked with localhost. And it fails.\n\r\n[Edit]\r\nFailing means that Firefox displays a cartoon of baby Godzilla with a power plug and matching reception that he just unplugged (?)\r\nThe text reads (my translation from German):\r\n\"Error: Connection failed.\r\nFirefox cannot establish a connection to the server under 192.168.1.42:5000.\r\no The website might temporarily be unavailable. Please try again later\r\no If you also cannot reach other web sites, check your network or internet connection.\r\no If your computer or network is protected by a proxy or firewall, ensure that Firefox is allowed to access the internet\"\r\n[/Edit]\r\nI created a firewall rule, even deactivated the firewall altogether, but to no avail. That doesn't seem to be my problem.\n\r\nI'm on Windows 10 Prof x64, python 3.8.2, Flask 1.1.2, Flask-SocketIO 4.3.2, if that matters.\n\r\nHow do I get access to the running web server from locations in our LAN other than localhost?\n\nWhat I have tried:\n\r\n+ Created a firewall rule for port 5000\r\n+ Deactivated firewall\r\n+ Started the SocketIO application with parameterPython\n\r\nsocketio.run(app, host=\"192.168.1.42:5000\")\r\n[Edit]\r\n+ Other parameterPython\n\r\nsocketio.run(app, host=\"192.168.1.42:5000\", cors_allowed_origins='*')[/Edit]\r\n[Edit2]\r\n+ Other ip addressPython\n\r\nsocketio.run(app, host=\"0.0.0.0:5000\", cors_allowed_origins='*')[/Edit2]\n\r\n[Edit3]\r\nMy problem definitely comes from the application, not the system.\r\nProof: I didn't start my application, but\n\r\n$ winpty python -m http.server 5000instead, checked with firefox on the same machine to open the url 192.168.1.42 and also from an Android phone in the same LAN. Both work flawlessly (get access to the very directory python has been started in).\r\n[/Edit3]\r\n\t\t    "
+    },
+    "answers": [
+      {
+        "id": "2_5297594_1",
+        "type": "acceptedAnswer",
+        "content": "\r\n    In an attempt to find out how other web servers on the same machine would be treated, I startedcommand\n\r\n$ winpty python -m http.server 5000(Found that somwhere in the internet). That triggered the firewall to tell that it had just blocked python.exe and ask if it should continue doing so, which I negated. This python-based web server worked well. And from that time on, the flask-socket.io web server did as well.\r\n",
+        "score": 5.0,
+        "vote_count": 1,
+        "user_reputation": 18270
+      }
+    ],
+    "link": "https://www.codeproject.com/Questions/5296802/Make-flask-socket-io-server-accessible",
+    "tags": [
+      "Python",
+      "web",
+      "flask"
+    ]
+  }
+]
